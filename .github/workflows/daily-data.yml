@@ -21,6 +21,9 @@ jobs:
         with:
           bun-version: latest
       - run: bun install --frozen-lockfile
+      # ДОБАВЛЕННЫЙ ШАГ: Принудительное обновление библиотеки Yahoo Finance
+      - name: Update yahoo-finance2
+        run: bun add yahoo-finance2@latest
       - run: bun src/index.ts predict --ticker="AAPL,MSFT,GOOGL,AMZN,NVDA,META,TSLA" --sort=asc
       - name: Pull latest changes before commit
         run: git pull --rebase origin main
