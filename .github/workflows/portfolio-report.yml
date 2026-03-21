@@ -1,0 +1,41 @@
+name: Personal Portfolio Report
+
+on:
+  schedule:
+    - cron: '30 22 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  portfolio-analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      # ШАГ: Создание файла из секрета
+      - name: Create portfolio file from secret
+        env:
+          PORTFOLIO_DATA: ${{ secrets.PORTFOLIO_JSON_DATA }}
+        run: |
+          echo "$PORTFOLIO_DATA" > .portfolio.json
+          # Проверяем, что файл создался (опционально, для логов)
+          ls -la .portfolio.json
+
+      - name: Calculate Portfolio Performance
+        run: |
+          uv run .agent/skills/stock-analysis/scripts/portfolio.py --portfolio .portfolio.json --output json > portfolio_res.json
+
+      - name: Send to n8n
+        env:
+          WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST \
+               -H "Content-Type: application/json" \
+               -d @portfolio_res.json \
+               $WEBHOOK_URL
