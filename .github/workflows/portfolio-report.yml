@@ -27,19 +27,32 @@ jobs:
           # Проверяем, что портфель виден системе
           uv run .agent/skills/stock-analysis/scripts/portfolio.py list
 
-      - name: Portfolio Analysis with Period Returns
         run: |
-          # Добавляем флаг --period (например, weekly или monthly)
-          # Это добавит в JSON поля с доходностью за этот период
-          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --portfolio "My Portfolio" --period weekly --output json > portfolio_report.json
+          # Запускаем анализ. Мы используем команду analyze_stock.py с флагом --portfolio.
+          # ВАЖНО: используем одно и то же имя файла везде.
+          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --portfolio "My Portfolio" --output json > report.json
           
-          cat portfolio_report.json
+          # ПРОВЕРКА 1: Существует ли файл?
+          if [ ! -f report.json ]; then
+            echo "❌ ОШИБКА: Файл report.json не был создан!"
+            exit 1
+          fi
+          
+          # ПРОВЕРКА 2: Не пустой ли он?
+          if [ ! -s report.json ]; then
+            echo "❌ ОШИБКА: Файл report.json пуст!"
+            exit 1
+          fi
+          
+          echo "✅ Анализ завершен, файл готов к отправке."
+          cat report.json
 
-      - name: Send Deep Analysis to n8n
+      - name: Send to n8n Webhook
         env:
           WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
+          # Отправляем файл report.json
           curl -X POST \
                -H "Content-Type: application/json" \
-               -d @full_portfolio_report.json \
+               -d @report.json \
                $WEBHOOK_URL
