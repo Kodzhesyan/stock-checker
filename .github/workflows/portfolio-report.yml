@@ -1,12 +1,13 @@
-name: Official Portfolio Analysis
+name: Portfolio Analysis v5.0 (P&L + n8n)
 
 on:
   schedule:
-    - cron: '0 22 * * 1-5'
-  workflow_dispatch:
+    # Запуск по будням в 22:30 (после закрытия биржи в США)
+    - cron: '30 22 * * 1-5'
+  workflow_dispatch: # Позволяет запускать вручную кнопкой в GitHub
 
 jobs:
-  analyze-portfolio:
+  analyze-and-report:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,42 +17,47 @@ jobs:
       - name: Setup uv
         uses: astral-sh/setup-uv@v5
         with:
-          enable-cache: true
+          version: "latest"
+          enable-cache: true # Ускоряет запуск в 10 раз
 
-      - name: Reconstruct Portfolio
+      - name: Reconstruct Portfolio Database
         run: |
-          # Создаем портфель и наполняем его
+          # 1. Создаем портфель "My Portfolio"
           uv run .agent/skills/stock-analysis/scripts/portfolio.py create "My Portfolio"
+          
+          # 2. Добавляем ваши активы (команды 'add' сохраняют их во внутреннюю БД)
+          # Используем ваши 36 акций VOO и пример с AAPL/BTC
           uv run .agent/skills/stock-analysis/scripts/portfolio.py add VOO --quantity 36 --cost 505.20 --portfolio "My Portfolio"
+          uv run .agent/skills/stock-analysis/scripts/portfolio.py add AAPL --quantity 10 --cost 185.50 --portfolio "My Portfolio"
+          uv run .agent/skills/stock-analysis/scripts/portfolio.py add BTC-USD --quantity 0.05 --cost 45000 --portfolio "My Portfolio"
           
-          # Проверяем, что портфель виден системе
-          uv run .agent/skills/stock-analysis/scripts/portfolio.py list
+          # 3. Проверяем в логах, что портфель собран верно
+          uv run .agent/skills/stock-analysis/scripts/portfolio.py show --portfolio "My Portfolio"
 
+      - name: Deep Analysis & Generate JSON
+        id: analysis
         run: |
-          # Запускаем анализ. Мы используем команду analyze_stock.py с флагом --portfolio.
-          # ВАЖНО: используем одно и то же имя файла везде.
-          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --portfolio "My Portfolio" --output json > report.json
+          # Запускаем анализ конкретного портфеля. 
+          # Флаг --output json гарантирует, что n8n получит структурированные данные.
+          # Флаг --period weekly добавит отчет за последнюю неделю.
+          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --portfolio "My Portfolio" --period weekly --output json > report.json
           
-          # ПРОВЕРКА 1: Существует ли файл?
-          if [ ! -f report.json ]; then
-            echo "❌ ОШИБКА: Файл report.json не был создан!"
-            exit 1
-          fi
-          
-          # ПРОВЕРКА 2: Не пустой ли он?
+          # ПРОВЕРКА: Если файл пустой или не создан, Workflow прервется с ошибкой
           if [ ! -s report.json ]; then
-            echo "❌ ОШИБКА: Файл report.json пуст!"
+            echo "❌ ОШИБКА: Файл report.json не создан или пуст!"
             exit 1
           fi
           
-          echo "✅ Анализ завершен, файл готов к отправке."
+          # Выводим JSON в логи GitHub для отладки
           cat report.json
 
-      - name: Send to n8n Webhook
+      - name: Send Report to n8n Webhook
+        if: success() # Выполнять только если анализ прошел успешно
         env:
+          # Убедитесь, что в Settings -> Secrets -> Actions добавлен секрет SLACK_WEBHOOK_URL
           WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          # Отправляем файл report.json
+          # Отправляем файл report.json в n8n на ваш сервер Contabo
           curl -X POST \
                -H "Content-Type: application/json" \
                -d @report.json \
