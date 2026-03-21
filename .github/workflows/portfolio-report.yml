@@ -32,11 +32,9 @@ jobs:
 
       - name: Run Official Portfolio Analysis
         run: |
-          # Запускаем анализ конкретного портфеля по имени
-          # Если в JSON имя "My Portfolio", используйте его здесь:
-          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --portfolio "My Portfolio" --output json > portfolio_report.json
+          # Теперь мы передаем ПУТЬ к файлу, а не название портфеля
+          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --portfolio .portfolio.json --output json > portfolio_report.json
           
-          # Посмотрим, что внутри
           cat portfolio_report.json
 
       - name: Send to n8n
