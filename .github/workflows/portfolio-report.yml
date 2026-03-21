@@ -18,43 +18,35 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Reconstruct Portfolio Database
+      - name: Reconstruct Portfolio
         run: |
-          # 1. Создаем портфель (обязательный первый шаг)
+          # Создаем портфель и наполняем его
           uv run .agent/skills/stock-analysis/scripts/portfolio.py create "My Portfolio"
-          
-          # 2. Добавляем ваши активы (используем ваши 36 акций VOO)
-          # Замените 505.20 на вашу реальную цену покупки (среднюю цену)
           uv run .agent/skills/stock-analysis/scripts/portfolio.py add VOO --quantity 36 --cost 505.20 --portfolio "My Portfolio"
           
-          # Пример добавления крипты (BTC-USD)
-          uv run .agent/skills/stock-analysis/scripts/portfolio.py add BTC-USD --quantity 0.05 --cost 45000 --portfolio "My Portfolio"
-          
-          # 3. Проверка: выводим таблицу портфеля в логи GitHub для контроля
-          uv run .agent/skills/stock-analysis/scripts/portfolio.py show --portfolio "My Portfolio"
+          # Проверяем, что портфель виден системе
+          uv run .agent/skills/stock-analysis/scripts/portfolio.py list
 
-      - name: Deep Analysis & Export to JSON
+      - name: Deep Analysis & Export
+        id: analysis
         run: |
-          # Теперь запускаем мощный анализ всего портфеля
-          # Флаг --output json позволит n8n легко прочитать данные
-          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --portfolio "My Portfolio" --output json > portfolio_full_report.json
+          # Запускаем анализ. ВАЖНО: имя файла должно быть portfolio_report.json
+          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --portfolio "My Portfolio" --output json > portfolio_report.json
           
-          # Посмотрим на структуру в логах
-          cat portfolio_full_report.json
+          # ПРОВЕРКА: Если файл пустой, выводим содержимое папки для отладки
+          if [ ! -s portfolio_report.json ]; then
+            echo "❌ Файл portfolio_report.json не найден или пуст!"
+            ls -la
+            exit 1
+          fi
+          cat portfolio_report.json
 
-      - name: Webhook to n8n
+      - name: Send Report to n8n
+        if: success()
         env:
           WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          # Отправляем файл с полным анализом (сигналы + P&L) в n8n
-          curl -X POST \
-               -H "Content-Type: application/json" \
-               -d @portfolio_full_report.json \
-               $WEBHOOK_URL
-      - name: Send to n8n
-        env:
-          WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
+          # Теперь файл точно существует
           curl -X POST \
                -H "Content-Type: application/json" \
                -d @portfolio_report.json \
