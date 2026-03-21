@@ -20,37 +20,10 @@ jobs:
           version: "latest"
           enable-cache: true # Ускоряет запуск в 10 раз
 
-      - name: Reconstruct Portfolio Database
+      - name: Analysis from File
         run: |
-          # 1. Создаем портфель "My Portfolio"
-          uv run .agent/skills/stock-analysis/scripts/portfolio.py create "My Portfolio"
+          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --portfolio portfolio.json --output json > report.json
           
-          # 2. Добавляем ваши активы (команды 'add' сохраняют их во внутреннюю БД)
-          # Используем ваши 36 акций VOO и пример с AAPL/BTC
-          uv run .agent/skills/stock-analysis/scripts/portfolio.py add VOO --quantity 36 --cost 505.20 --portfolio "My Portfolio"
-          uv run .agent/skills/stock-analysis/scripts/portfolio.py add AAPL --quantity 10 --cost 185.50 --portfolio "My Portfolio"
-          uv run .agent/skills/stock-analysis/scripts/portfolio.py add BTC-USD --quantity 0.05 --cost 45000 --portfolio "My Portfolio"
-          
-          # 3. Проверяем в логах, что портфель собран верно
-          uv run .agent/skills/stock-analysis/scripts/portfolio.py show --portfolio "My Portfolio"
-
-      - name: Deep Analysis & Generate JSON
-        id: analysis
-        run: |
-          # Запускаем анализ конкретного портфеля. 
-          # Флаг --output json гарантирует, что n8n получит структурированные данные.
-          # Флаг --period weekly добавит отчет за последнюю неделю.
-          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --portfolio "My Portfolio" --period weekly --output json > report.json
-          
-          # ПРОВЕРКА: Если файл пустой или не создан, Workflow прервется с ошибкой
-          if [ ! -s report.json ]; then
-            echo "❌ ОШИБКА: Файл report.json не создан или пуст!"
-            exit 1
-          fi
-          
-          # Выводим JSON в логи GitHub для отладки
-          cat report.json
-
       - name: Send Report to n8n Webhook
         if: success() # Выполнять только если анализ прошел успешно
         env:
