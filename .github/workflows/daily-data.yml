@@ -3,6 +3,10 @@ name: Daily stock data
 permissions:
   contents: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  
+
 on:
   schedule:
     - cron: "0 23 * * *" # Run ~2 hours after U.S. market close
