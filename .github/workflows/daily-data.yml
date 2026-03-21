@@ -5,7 +5,7 @@ permissions:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-  
+
 
 on:
   schedule:
@@ -21,14 +21,18 @@ jobs:
         with:
           bun-version: latest
       - run: bun install --frozen-lockfile
-      # ДОБАВЛЕННЫЙ ШАГ: Принудительное обновление библиотеки Yahoo Finance
       - name: Update yahoo-finance2
         run: bun add yahoo-finance2@latest
       - run: bun src/index.ts predict --ticker="AAPL,MSFT,GOOGL,AMZN,NVDA,META,TSLA" --sort=asc
+      - name: Commit lock file changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add bun.lock
+          git commit -m "chore: update dependencies" || true
       - name: Pull latest changes before commit
         run: git pull --rebase origin main
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: daily stock data update"
           file_pattern: public/*.csv
-          
