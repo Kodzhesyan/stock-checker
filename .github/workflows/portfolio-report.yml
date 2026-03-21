@@ -18,28 +18,30 @@ jobs:
         with:
           version: "latest"
 
-      # ШАГ: Создание файла из секрета
       - name: Create portfolio file from secret
         env:
           PORTFOLIO_DATA: ${{ secrets.PORTFOLIO_JSON_DATA }}
         run: |
+          # Скрипт ищет файл именно с таким именем в корне
           echo "$PORTFOLIO_DATA" > .portfolio.json
-          # Проверяем, что файл создался (опционально, для логов)
-          ls -la .portfolio.json
 
-      - name: Calculate Portfolio Performance
+      - name: Get Portfolio List
+        id: portfolio_step
         run: |
-          # Переносим путь к файлу В НАЧАЛО, перед командой list
-          uv run .agent/skills/stock-analysis/scripts/portfolio.py --portfolio .portfolio.json list --output json > portfolio_res.json
+          # Запускаем просто команду list без лишних флагов
+          # Сохраняем вывод в файл report.txt
+          uv run .agent/skills/stock-analysis/scripts/portfolio.py list > report.txt
           
-          # Проверим, сработало ли
-          cat portfolio_res.json
+          # Выводим в лог для проверки
+          cat report.txt
 
-      - name: Send to n8n
+      - name: Send Report to n8n
         env:
           WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
+          # Читаем текст из файла и отправляем его как значение "report" в JSON
+          REPORT_TEXT=$(cat report.txt)
           curl -X POST \
                -H "Content-Type: application/json" \
-               -d @portfolio_res.json \
+               -d "{\"report\": \"$REPORT_TEXT\"}" \
                $WEBHOOK_URL
