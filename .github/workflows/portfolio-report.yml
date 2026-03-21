@@ -1,12 +1,12 @@
-name: Personal Portfolio Report
+name: Official Portfolio Analysis
 
 on:
   schedule:
-    - cron: '30 22 * * 1-5'
+    - cron: '0 22 * * 1-5'
   workflow_dispatch:
 
 jobs:
-  portfolio-analysis:
+  analyze-portfolio:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,36 +18,32 @@ jobs:
         with:
           version: "latest"
 
-      - name: Create portfolio file from secret
+      - name: Inject Portfolio Data
         env:
+          # ВАЖНО: Ваш JSON в секретах должен быть оформлен как словарь с именами портфелей
+          # Пример: { "My Portfolio": { "positions": [...] } }
           PORTFOLIO_DATA: ${{ secrets.PORTFOLIO_JSON_DATA }}
         run: |
-          # Создаем структуру папок, которую ожидает агент
-          mkdir -p data/config
+          # Создаем официальный путь для хранения портфелей
+          mkdir -p ~/.clawdbot/skills/stock-analysis/
           
-          # Записываем данные в файл (убираем точку в начале имени)
-          echo "$PORTFOLIO_DATA" > data/config/portfolio.json
-          
-          # На всякий случай создадим и в корне, если он ищет там
-          echo "$PORTFOLIO_DATA" > .portfolio.json
+          # Записываем данные в файл, который ожидает скрипт
+          echo "$PORTFOLIO_DATA" > ~/.clawdbot/skills/stock-analysis/portfolios.json
 
-      - name: Get Portfolio List
+      - name: Run Official Portfolio Analysis
         run: |
-          # Запускаем команду list
-          uv run .agent/skills/stock-analysis/scripts/portfolio.py list > report.txt
+          # Запускаем анализ конкретного портфеля по имени
+          # Если в JSON имя "My Portfolio", используйте его здесь:
+          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --portfolio "My Portfolio" --output json > portfolio_report.json
           
-          # Проверяем вывод в логах GitHub
-          cat report.txt
+          # Посмотрим, что внутри
+          cat portfolio_report.json
 
-      - name: Send Report to n8n
+      - name: Send to n8n
         env:
           WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          # Читаем текст и отправляем в n8n
-          # Используем jq для безопасной упаковки текста в JSON (чтобы кавычки не ломали curl)
-          REPORT_TEXT=$(cat report.txt)
-          jq -n --arg msg "$REPORT_TEXT" '{"report": $msg}' | \
           curl -X POST \
                -H "Content-Type: application/json" \
-               -d @- \
+               -d @portfolio_report.json \
                $WEBHOOK_URL
