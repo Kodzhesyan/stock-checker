@@ -1,0 +1,41 @@
+name: Python Stock Analyzer
+
+on:
+  workflow_dispatch:
+    inputs:
+      tickers:
+        description: 'Тикеры для анализа (ЧЕРЕЗ ПРОБЕЛ, например: AAPL MSFT BTC-USD)'
+        required: true
+        default: 'AAPL MSFT TSLA'
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Скачивание кода репозитория
+        uses: actions/checkout@v4
+
+      - name: Установка менеджера пакетов uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: Запуск скрипта и сохранение в JSON
+        # Добавили --output json и сохранили результат в файл result.json
+        run: |
+          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py ${{ github.event.inputs.tickers }} --output json > result.json
+          
+          # Выводим содержимое файла в логи GitHub, чтобы вы могли его проверить в случае чего
+          cat result.json 
+
+      - name: Отправка данных на вебхук n8n
+        # Используем ваш секрет с вебхуком
+        env:
+          WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        # Отправляем файл result.json через стандартную утилиту curl
+        run: |
+          curl -X POST \
+               -H "Content-Type: application/json" \
+               -d @result.json \
+               $WEBHOOK_URL
