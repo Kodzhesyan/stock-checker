@@ -22,26 +22,32 @@ jobs:
         env:
           PORTFOLIO_DATA: ${{ secrets.PORTFOLIO_JSON_DATA }}
         run: |
-          # Скрипт ищет файл именно с таким именем в корне
+          # Создаем структуру папок, которую ожидает агент
+          mkdir -p data/config
+          
+          # Записываем данные в файл (убираем точку в начале имени)
+          echo "$PORTFOLIO_DATA" > data/config/portfolio.json
+          
+          # На всякий случай создадим и в корне, если он ищет там
           echo "$PORTFOLIO_DATA" > .portfolio.json
 
       - name: Get Portfolio List
-        id: portfolio_step
         run: |
-          # Запускаем просто команду list без лишних флагов
-          # Сохраняем вывод в файл report.txt
+          # Запускаем команду list
           uv run .agent/skills/stock-analysis/scripts/portfolio.py list > report.txt
           
-          # Выводим в лог для проверки
+          # Проверяем вывод в логах GitHub
           cat report.txt
 
       - name: Send Report to n8n
         env:
           WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          # Читаем текст из файла и отправляем его как значение "report" в JSON
+          # Читаем текст и отправляем в n8n
+          # Используем jq для безопасной упаковки текста в JSON (чтобы кавычки не ломали curl)
           REPORT_TEXT=$(cat report.txt)
+          jq -n --arg msg "$REPORT_TEXT" '{"report": $msg}' | \
           curl -X POST \
                -H "Content-Type: application/json" \
-               -d "{\"report\": \"$REPORT_TEXT\"}" \
+               -d @- \
                $WEBHOOK_URL
