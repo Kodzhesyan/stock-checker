@@ -1,12 +1,18 @@
 name: Python Stock Analyzer
 
 on:
+  # 1. ЗАПУСК ПО РАСПИСАНИЮ
+  schedule:
+    # Запуск в 22:00 (UTC) с понедельника по пятницу (после закрытия рынков)
+    - cron: '0 22 * * 1-5'
+    
+  # 2. РУЧНОЙ ЗАПУСК
   workflow_dispatch:
     inputs:
       tickers:
-        description: 'Тикеры для анализа (ЧЕРЕЗ ПРОБЕЛ, например: AAPL MSFT BTC-USD)'
-        required: true
-        default: 'AAPL MSFT TSLA'
+        description: 'Тикеры для анализа (ЧЕРЕЗ ПРОБЕЛ)'
+        required: false
+        default: 'AAPL MSFT GOOGL AMZN NVDA META TSLA'
 
 jobs:
   analyze:
@@ -22,18 +28,23 @@ jobs:
           version: "latest"
 
       - name: Запуск скрипта и сохранение в JSON
-        # Добавили --output json и сохранили результат в файл result.json
         run: |
-          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py ${{ github.event.inputs.tickers }} --output json > result.json
+          # Проверяем: если тикеры переданы вручную, берем их. Если нет (запуск по расписанию) - берем дефолтные.
+          TICKERS="${{ github.event.inputs.tickers }}"
+          if [ -z "$TICKERS" ]; then
+            TICKERS="AAPL MSFT GOOGL AMZN NVDA META TSLA"
+          fi
           
-          # Выводим содержимое файла в логи GitHub, чтобы вы могли его проверить в случае чего
+          echo "Анализируем тикеры: $TICKERS"
+          
+          # Запускаем скрипт
+          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py $TICKERS --output json > result.json
           cat result.json 
 
       - name: Отправка данных на вебхук n8n
-        # Используем ваш секрет с вебхуком
         env:
+          # Замените на вашу прямую ссылку или оставьте секрет, если починили его
           WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        # Отправляем файл result.json через стандартную утилиту curl
         run: |
           curl -X POST \
                -H "Content-Type: application/json" \
