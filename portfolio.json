@@ -1,0 +1,7 @@
+{
+  "name": "My Portfolio",
+  "assets": [
+    {"ticker": "VOO", "quantity": 36, "cost": 505.20},
+    {"ticker": "AAPL", "quantity": 10, "cost": 185.50}
+  ]
+}
