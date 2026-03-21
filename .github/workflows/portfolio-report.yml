@@ -29,15 +29,11 @@ jobs:
 
       - name: Calculate Portfolio Performance
         run: |
-          # Мы добавляем команду 'show' ПЕРЕД названием портфеля
-          uv run .agent/skills/stock-analysis/scripts/portfolio.py show --portfolio .portfolio.json --output json > portfolio_res.json
+          # Используем 'list' вместо 'show', так как 'list' обычно поддерживает экспорт
+          uv run .agent/skills/stock-analysis/scripts/portfolio.py list --portfolio .portfolio.json --output json > portfolio_res.json
           
-          # Проверим, что в файле действительно JSON, а не ошибка
+          # Проверим, что получилось
           cat portfolio_res.json
-
-      - name: Calculate Portfolio Performance
-        run: |
-          uv run .agent/skills/stock-analysis/scripts/portfolio.py --portfolio .portfolio.json --output json > portfolio_res.json
 
       - name: Send to n8n
         env:
