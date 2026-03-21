@@ -29,10 +29,10 @@ jobs:
 
       - name: Calculate Portfolio Performance
         run: |
-          # Используем 'list' вместо 'show', так как 'list' обычно поддерживает экспорт
-          uv run .agent/skills/stock-analysis/scripts/portfolio.py list --portfolio .portfolio.json --output json > portfolio_res.json
+          # Переносим путь к файлу В НАЧАЛО, перед командой list
+          uv run .agent/skills/stock-analysis/scripts/portfolio.py --portfolio .portfolio.json list --output json > portfolio_res.json
           
-          # Проверим, что получилось
+          # Проверим, сработало ли
           cat portfolio_res.json
 
       - name: Send to n8n
