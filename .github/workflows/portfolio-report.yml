@@ -1,37 +1,35 @@
-name: Portfolio Analysis v5.0 (P&L + n8n)
+name: Simple Portfolio Report
 
 on:
+  workflow_dispatch: # Запуск кнопкой
   schedule:
-    # Запуск по будням в 22:30 (после закрытия биржи в США)
     - cron: '30 22 * * 1-5'
-  workflow_dispatch: # Позволяет запускать вручную кнопкой в GitHub
 
 jobs:
-  analyze-and-report:
+  report:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v5
         with:
-          version: "latest"
-          enable-cache: true # Ускоряет запуск в 10 раз
+          enable-cache: true
 
-      - name: Analysis from File
+      - name: Analyze My Stocks
         run: |
-          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --file portfolio.json --output json > report.json
+          # 1. Сначала просто создаем портфель в памяти (одна строка)
+          uv run .agent/skills/stock-analysis/scripts/portfolio.py create "My Portfolio"
           
-      - name: Send Report to n8n Webhook
-        if: success() # Выполнять только если анализ прошел успешно
+          # 2. Добавляем ваши 36 акций VOO (одна строка)
+          uv run .agent/skills/stock-analysis/scripts/portfolio.py add VOO --quantity 36 --cost 505.20 --portfolio "My Portfolio"
+          
+          # 3. Запускаем анализ и сохраняем в JSON (одна строка)
+          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --portfolio "My Portfolio" --output json > report.json
+
+      - name: Send to n8n
         env:
-          # Убедитесь, что в Settings -> Secrets -> Actions добавлен секрет SLACK_WEBHOOK_URL
           WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          # Отправляем файл report.json в n8n на ваш сервер Contabo
-          curl -X POST \
-               -H "Content-Type: application/json" \
-               -d @report.json \
-               $WEBHOOK_URL
+          curl -X POST -H "Content-Type: application/json" -d @report.json $WEBHOOK_URL
