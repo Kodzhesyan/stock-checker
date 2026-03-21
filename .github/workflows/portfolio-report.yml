@@ -1,12 +1,12 @@
-name: Simple Portfolio Report
+name: Monthly Portfolio Report
 
 on:
-  workflow_dispatch: # Запуск кнопкой
+  workflow_dispatch: # Запуск вручную кнопкой
   schedule:
-    - cron: '30 22 * * 1-5'
+    - cron: '0 21 1 * *' # Запуск 1-го числа каждого месяца
 
 jobs:
-  report:
+  analyze:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -14,19 +14,17 @@ jobs:
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
 
-      - name: Analyze My Stocks
+      - name: Build and Analyze
         run: |
-          # 1. Сначала просто создаем портфель в памяти (одна строка)
+          # 1. Создаем портфель в памяти
           uv run .agent/skills/stock-analysis/scripts/portfolio.py create "My Portfolio"
           
-          # 2. Добавляем ваши 36 акций VOO (одна строка)
+          # 2. Добавляем ваши 36 акций VOO (укажите свою цену покупки в --cost)
           uv run .agent/skills/stock-analysis/scripts/portfolio.py add VOO --quantity 36 --cost 505.20 --portfolio "My Portfolio"
           
-          # 3. Запускаем анализ и сохраняем в JSON (одна строка)
-          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --portfolio "My Portfolio" --output json > report.json
+          # 3. Запускаем глубокий анализ за МЕСЯЦ в формате JSON
+          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py -p "My Portfolio" --period monthly --output json > report.json
 
       - name: Send to n8n
         env:
