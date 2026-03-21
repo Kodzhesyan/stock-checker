@@ -22,7 +22,7 @@ jobs:
 
       - name: Analysis from File
         run: |
-          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --portfolio portfolio.json --output json > report.json
+          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --file portfolio.json --output json > report.json
           
       - name: Send Report to n8n Webhook
         if: success() # Выполнять только если анализ прошел успешно
