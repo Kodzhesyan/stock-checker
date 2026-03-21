@@ -27,13 +27,13 @@ jobs:
           # Проверяем, что портфель виден системе
           uv run .agent/skills/stock-analysis/scripts/portfolio.py list
 
-      - name: Portfolio Deep Analysis
+      - name: Portfolio Analysis with Period Returns
         run: |
-          # Запускаем анализ конкретного портфеля с выводом в JSON
-          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --portfolio "My Portfolio" --output json > full_portfolio_report.json
+          # Добавляем флаг --period (например, weekly или monthly)
+          # Это добавит в JSON поля с доходностью за этот период
+          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --portfolio "My Portfolio" --period weekly --output json > portfolio_report.json
           
-          # Выведем в логи, чтобы убедиться, что P&L посчитан
-          cat full_portfolio_report.json
+          cat portfolio_report.json
 
       - name: Send Deep Analysis to n8n
         env:
