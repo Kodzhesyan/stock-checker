@@ -21,8 +21,7 @@ jobs:
         with:
           bun-version: latest
       - run: bun install --frozen-lockfile
-      - name: Update yahoo-finance2
-        run: bun add yahoo-finance2@latest
+
       - run: bun src/index.ts predict --ticker="AAPL,MSFT,GOOGL,AMZN,NVDA,META,TSLA" --sort=asc
       - name: Commit lock file changes
         run: |
