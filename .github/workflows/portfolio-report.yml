@@ -26,10 +26,10 @@ jobs:
           uv run .agent/skills/stock-analysis/scripts/portfolio.py create "My Portfolio"
           
           # 2. Добавляем ваши активы (команды 'add' сохраняют их во внутреннюю БД)
-          # Используем ваши 36 акций VOO и пример с AAPL/BTC
-          uv run .agent/skills/stock-analysis/scripts/portfolio.py add VOO --quantity 36 --cost 505.20 --portfolio "My Portfolio"
-          uv run .agent/skills/stock-analysis/scripts/portfolio.py add AAPL --quantity 10 --cost 185.50 --portfolio "My Portfolio"
-          uv run .agent/skills/stock-analysis/scripts/portfolio.py add BTC-USD --quantity 0.05 --cost 45000 --portfolio "My Portfolio"
+          # Используем ваши 36 акций VOO и...
+          uv run .agent/skills/stock-analysis/scripts/portfolio.py add VOO --quantity 36 --cost 610.23 --portfolio "My Portfolio"
+          uv run .agent/skills/stock-analysis/scripts/portfolio.py add GOOG --quantity 1 --cost 334.16 --portfolio "My Portfolio"
+          
           
           # 3. Проверяем в логах, что портфель собран верно
           uv run .agent/skills/stock-analysis/scripts/portfolio.py show --portfolio "My Portfolio"
