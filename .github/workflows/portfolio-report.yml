@@ -27,27 +27,24 @@ jobs:
           # Проверяем, что портфель виден системе
           uv run .agent/skills/stock-analysis/scripts/portfolio.py list
 
-      - name: Deep Analysis & Export
-        id: analysis
+      - name: Get Portfolio P&L Table
         run: |
-          # Запускаем анализ. ВАЖНО: имя файла должно быть portfolio_report.json
-          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --portfolio "My Portfolio" --output json > portfolio_report.json
+          # Генерируем текстовую таблицу портфеля
+          uv run .agent/skills/stock-analysis/scripts/portfolio.py show --portfolio "My Portfolio" > portfolio_table.txt
           
-          # ПРОВЕРКА: Если файл пустой, выводим содержимое папки для отладки
-          if [ ! -s portfolio_report.json ]; then
-            echo "❌ Файл portfolio_report.json не найден или пуст!"
-            ls -la
-            exit 1
-          fi
-          cat portfolio_report.json
+          # Посмотрим, что получилось в логах
+          cat portfolio_table.txt
 
-      - name: Send Report to n8n
-        if: success()
+      - name: Send Table to n8n
         env:
           WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          # Теперь файл точно существует
+          # Запаковываем текст таблицы в JSON с помощью jq
+          TABLE_JSON=$(jq -n --arg msg "$(cat portfolio_table.txt)" '{"report_type": "pnl_table", "table": $msg}')
+          
           curl -X POST \
                -H "Content-Type: application/json" \
-               -d @portfolio_report.json \
+               -d "$TABLE_JSON" \
                $WEBHOOK_URL
+
+      
