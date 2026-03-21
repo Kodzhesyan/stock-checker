@@ -39,8 +39,8 @@ jobs:
         run: |
           # Запускаем анализ конкретного портфеля. 
           # Флаг --output json гарантирует, что n8n получит структурированные данные.
-          # Флаг --period weekly добавит отчет за последнюю неделю.
-          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --portfolio "My Portfolio" --period weekly --output json > report.json
+          # Флаг --period daily добавит отчет за последний день.
+          uv run .agent/skills/stock-analysis/scripts/analyze_stock.py --portfolio "My Portfolio" --period daily --output json > report.json
           
           # ПРОВЕРКА: Если файл пустой или не создан, Workflow прервется с ошибкой
           if [ ! -s report.json ]; then
