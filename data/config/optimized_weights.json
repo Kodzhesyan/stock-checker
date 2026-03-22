@@ -4,30 +4,30 @@
   "bestValue": 3.8285741391920585,
   "bestParams": {
     "indicatorWeights": {
-      "rsi": 81.50283404681143,
-      "stochastic": 96.08769119769606,
-      "bollinger": 90.34318980238068,
-      "donchian": 69.32931483075683,
-      "williamsR": 58.17971365819524,
-      "fearGreed": 64.95457761290689,
-      "macd": 92.53348845576821,
-      "sma": 77.72193554542443,
-      "ema": 74.62074085717255
+      "rsi": 55.19158333555229,
+      "stochastic": 84.18806279334603,
+      "bollinger": 86.5907808780073,
+      "donchian": 58.177806634218086,
+      "williamsR": 70.30115731916068,
+      "fearGreed": 51.467454654884676,
+      "macd": 55.264989367435405,
+      "sma": 89.55111849065423,
+      "ema": 68.98173564219717
     },
     "patternWeights": {
-      "ascendingTriangle": 97.19336102027036,
-      "bullishFlag": 91.82929828602775,
-      "doubleBottom": 87.88247770504276,
-      "fallingWedge": 85.61958834649894,
-      "islandReversal": 72.05516355346035
+      "ascendingTriangle": 58.24806176200203,
+      "bullishFlag": 80.79403354339941,
+      "doubleBottom": 78.60336946861173,
+      "fallingWedge": 70.28752191764471,
+      "islandReversal": 97.14017462983801
     },
     "thresholds": {
-      "buy": 246,
-      "sell": 246
+      "buy": 242,
+      "sell": 250
     },
     "calibration": {
-      "slope": 0.015530211852996165,
-      "intercept": -0.1615413959348806
+      "slope": 0.01360585376598069,
+      "intercept": -0.8419314506887392
     }
   },
   "nTrials": 50,
