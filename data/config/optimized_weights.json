@@ -1,42 +1,42 @@
 {
   "strategy": "stock_checker_score",
   "symbol": "TSLA",
-  "bestValue": 4.907129425610167,
+  "bestValue": 3.222380696658827,
   "bestParams": {
     "indicatorWeights": {
-      "rsi": 98.80401579710743,
-      "stochastic": 53.44002881440203,
-      "bollinger": 66.15360789104545,
-      "donchian": 91.03739782949943,
-      "williamsR": 84.2747945149222,
-      "fearGreed": 48.56451594327848,
-      "macd": 73.56970502391417,
-      "sma": 60.500097612622845,
-      "ema": 51.25046374946542
+      "rsi": 51.737304466042,
+      "stochastic": 65.81101770675428,
+      "bollinger": 79.3489826154232,
+      "donchian": 93.57345665387311,
+      "williamsR": 77.51627271289362,
+      "fearGreed": 57.57717200073975,
+      "macd": 79.42713799967439,
+      "sma": 68.87013075474556,
+      "ema": 64.365366570187
     },
     "patternWeights": {
-      "ascendingTriangle": 87.6101375818896,
-      "bullishFlag": 86.20651685302337,
-      "doubleBottom": 97.84723199233272,
-      "fallingWedge": 82.17032499963658,
-      "islandReversal": 57.305392831904896
+      "ascendingTriangle": 66.0156620907127,
+      "bullishFlag": 67.46912062774274,
+      "doubleBottom": 90.55534019690013,
+      "fallingWedge": 55.509872396117224,
+      "islandReversal": 65.03884079101319
     },
     "thresholds": {
-      "buy": 190,
-      "sell": 204
+      "buy": 239,
+      "sell": 239
     },
     "calibration": {
-      "slope": 0.008294467283345078,
-      "intercept": -0.42743651411227135
+      "slope": 0.013433618847820586,
+      "intercept": -0.24826033087949106
     }
   },
   "nTrials": 50,
   "metrics": {
-    "sharpeRatio": 7.097268515157018,
-    "maxDrawdown": 20.3195116665816,
-    "winRate": 71.42857142857143,
-    "totalTrades": 7,
+    "sharpeRatio": 4.669271596253431,
+    "maxDrawdown": 15.369806906191496,
+    "winRate": 60,
+    "totalTrades": 5,
     "profitFactor": 0,
-    "return": 0.3879462580838843
+    "return": 0.1455380594490156
   }
 }
