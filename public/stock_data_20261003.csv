@@ -1,0 +1,2 @@
+Date,Ticker,Close,Volume,RSI,StochK,BBLower,BBUpper,DonchLower,DonchUpper,WilliamsR,FearGreed,Patterns,Score,Opinion,ATR,StopLoss,TakeProfit,TrailingStop,TrailingStart,MACD,MACDSignal,MACDHistogram,SMA20,EMA20
+2026-10-02,META,728.08,12944900,61.49,58.15,602.32,789.52,605.27,779.82,-41.85,67,,50.00,HOLD,25.41,689.96,804.32,689.96,740.79,57.67,59.35,-1.68,695.92,697.06
